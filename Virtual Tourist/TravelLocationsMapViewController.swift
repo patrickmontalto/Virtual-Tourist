@@ -47,10 +47,6 @@ class TravelLocationsMapViewController: UIViewController {
             }, completion: nil)
     }
     
-    override func viewDidAppear(animated: Bool) {
-        super.viewDidAppear(animated)
-    }
-    
     func placePin(gestureRecognizer:UIGestureRecognizer) {
         if gestureRecognizer.state != .Began {
             return
@@ -140,7 +136,6 @@ class TravelLocationsMapViewController: UIViewController {
         return mapView.convertPoint(point, toCoordinateFromView: mapView) as CLLocationCoordinate2D
     }
     
-    
     // MARK: - User Map Region
     
     // MARK: Save Region
@@ -165,7 +160,6 @@ class TravelLocationsMapViewController: UIViewController {
         guard let latitude = defaults.objectForKey("Latitude") as? CLLocationDegrees, let longitude = defaults.objectForKey("Longitude") as? CLLocationDegrees, let latDelta = defaults.objectForKey("LatitudeDelta") as? CLLocationDegrees, let lonDelta = defaults.objectForKey("LongitudeDelta") as? CLLocationDegrees else {
             return
         }
-        
         // Set mapView region and span
         mapView.region.center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         mapView.region.span = MKCoordinateSpanMake(latDelta, lonDelta)
@@ -174,6 +168,18 @@ class TravelLocationsMapViewController: UIViewController {
     // MARK: - Core Data Convenience
     var sharedContext: NSManagedObjectContext {
         return CoreDataStackManager.sharedInstance().managedObjectContext
+    }
+    
+    // MARK: - Present PhotoAlbumViewController
+    func presentPhotoAlbumForLocation(location: Pin) {
+        // TODO: Change editing to false?
+        
+        // Instantiate view controller
+        let photoAlbumViewController = storyboard?.instantiateViewControllerWithIdentifier("PhotoAlbumViewController") as! PhotoAlbumViewController
+        // Set location pin for controller
+        photoAlbumViewController.location = location
+        // Present view controller
+        navigationController?.pushViewController(photoAlbumViewController, animated: true)
     }
     
 }
@@ -207,22 +213,22 @@ extension TravelLocationsMapViewController: MKMapViewDelegate {
     
     // MARK: Delete Pin
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
-        print("Selected!")
+        // GUARD: Is there an annotation for the mapView?
+        guard let pin = view.annotation as? Pin else {
+            return
+        }
+        
         if editing {
-            
-            // GUARD: Is there an annotation for the mapView?
-            guard let pin = view.annotation as? Pin else {
-                return
-            }
-            
             // Remove pin from the context
             sharedContext.deleteObject(pin)
-            // TODO: Animate pin removal
+            // Animate pin removal
             mapView.removeAnnotation(pin, animated: true)
             // Save context
             CoreDataStackManager.sharedInstance().saveContext()
             
            // view.removeFromSuperview()
+        } else {
+            presentPhotoAlbumForLocation(pin)
         }
     }
 }

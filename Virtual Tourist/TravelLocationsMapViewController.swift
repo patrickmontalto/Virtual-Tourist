@@ -217,8 +217,8 @@ extension TravelLocationsMapViewController: MKMapViewDelegate {
             
             // Remove pin from the context
             sharedContext.deleteObject(pin)
-            // Remove pin from map
-            mapView.removeAnnotation(pin)
+            // TODO: Animate pin removal
+            mapView.removeAnnotation(pin, animated: true)
             // Save context
             CoreDataStackManager.sharedInstance().saveContext()
             

@@ -16,6 +16,7 @@
 		3A62A3391CF80C0F00694B24 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A62A3381CF80C0F00694B24 /* Photo.swift */; };
 		3A62A33B1CF80D3300694B24 /* ImageCacher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A62A33A1CF80D3300694B24 /* ImageCacher.swift */; };
 		3A62A33E1CF80DEA00694B24 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3A62A33C1CF80DEA00694B24 /* Model.xcdatamodeld */; };
+		D20652221CFE03AA00039DC1 /* MKMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20652211CFE03AA00039DC1 /* MKMapView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		3A62A3381CF80C0F00694B24 /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		3A62A33A1CF80D3300694B24 /* ImageCacher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCacher.swift; sourceTree = "<group>"; };
 		3A62A33D1CF80DEA00694B24 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
+		D20652211CFE03AA00039DC1 /* MKMapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MKMapView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +70,7 @@
 				3A62A3361CF8068100694B24 /* Pin.swift */,
 				3A62A3381CF80C0F00694B24 /* Photo.swift */,
 				3A62A3321CF7D20000694B24 /* TravelLocationsMapViewController.swift */,
+				D20652211CFE03AA00039DC1 /* MKMapView.swift */,
 				3A62A33A1CF80D3300694B24 /* ImageCacher.swift */,
 				3A62A3241CF7D19600694B24 /* Main.storyboard */,
 				3A62A3271CF7D19600694B24 /* Assets.xcassets */,
@@ -149,6 +152,7 @@
 				3A62A3331CF7D20000694B24 /* TravelLocationsMapViewController.swift in Sources */,
 				3A62A3211CF7D19600694B24 /* AppDelegate.swift in Sources */,
 				3A62A3351CF805CB00694B24 /* CoreDataStackManager.swift in Sources */,
+				D20652221CFE03AA00039DC1 /* MKMapView.swift in Sources */,
 				3A62A33E1CF80DEA00694B24 /* Model.xcdatamodeld in Sources */,
 				3A62A3371CF8068100694B24 /* Pin.swift in Sources */,
 				3A62A3391CF80C0F00694B24 /* Photo.swift in Sources */,

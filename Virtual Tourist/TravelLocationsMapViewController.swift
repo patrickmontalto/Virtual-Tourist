@@ -16,10 +16,11 @@ class TravelLocationsMapViewController: UIViewController {
     
     var editView: UIView!
     
-    var pins: [Pin]!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // set mapView Delegate
+        mapView.delegate = self
         
         // Add Edit button to Nav Bar
         navigationItem.rightBarButtonItem = editButtonItem()
@@ -33,11 +34,8 @@ class TravelLocationsMapViewController: UIViewController {
         // Load last user region
         loadMapRegion()
         
-        // Load Pins
-        pins = fetchAllPins()
-        
         // Populate Map with Core Data pins
-        placeSavedPins()
+        mapView.addAnnotations(fetchAllPins())
     }
     
     // MARK: - Allow editing on MapView
@@ -58,34 +56,31 @@ class TravelLocationsMapViewController: UIViewController {
             return
         }
         let touchPoint = gestureRecognizer.locationInView(mapView)
+        
+        let touchedCoordinate = coordinateForPoint(touchPoint)
 
-        let annotation = annotationForTouchPoint(touchPoint)
-        
-        mapView.addAnnotation(annotation)
-        
-        // Add annotation ("Pin") to core data here
-        let pinDictionary = [Pin.Keys.Latitude : annotation.coordinate.latitude, Pin.Keys.Longitude : annotation.coordinate.latitude]
-        let pin = Pin(dictionary: pinDictionary, context: sharedContext)
-        pins.append(pin)
+        // Create pin
+        let pin = Pin(latitudeDouble: touchedCoordinate.latitude, longitudeDouble: touchedCoordinate.longitude, context: sharedContext)
+        // Add pin to the map
+        mapView.addAnnotation(pin)
+        // Save context
         CoreDataStackManager.sharedInstance().saveContext()
     }
     
-    func placeSavedPins() {
-        var annotations = [MKPointAnnotation]()
-        print("pins count:\(pins.count)")
-        for pin in pins {
-            let lat = CLLocationDegrees(pin.latitude)
-            let lon = CLLocationDegrees(pin.longitude)
-            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = coordinate
-            annotations.append(annotation)
+    func fetchAllPins() -> [Pin] {
+        
+        // Create the Fetch Request
+        let fetchRequest = NSFetchRequest(entityName: "Pin")
+        // Execute the Fetch Request
+        do {
+            let results = try sharedContext.executeFetchRequest(fetchRequest)
+            return results as! [Pin]
+        } catch let error as NSError {
+            print("Error: \(error.localizedDescription)")
+            return [Pin]()
         }
-        // TODO: Figure out why these aren't being added...
-        mapView.addAnnotations(annotations)
-        print("annotation count:\(mapView.annotations.count)")
     }
+    
     
     // MARK: Translate View for Editing Instructions
     private func translateVerticalForEditingState(editing: Bool) {
@@ -131,8 +126,8 @@ class TravelLocationsMapViewController: UIViewController {
     // MARK: Set up map gesture recognizer
     private func configureGestureRecognizer() {
         // Add a Gesture Recognizer for a long press
-        let uilpgr = UILongPressGestureRecognizer(target: self, action: #selector(TravelLocationsMapViewController.placePin(_:)))
-        
+        let uilpgr = UILongPressGestureRecognizer(target: self, action: "placePin:")
+
         // Set minimum press duration for gesture recognizer
         uilpgr.minimumPressDuration = 1
         
@@ -140,16 +135,9 @@ class TravelLocationsMapViewController: UIViewController {
         mapView.addGestureRecognizer(uilpgr)
     }
     
-    // MARK: Build annotation for selected point
-    private func annotationForTouchPoint(touchPoint: CGPoint) -> MKPointAnnotation {
-        
-        let newCoordinate: CLLocationCoordinate2D = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
-        
-        let annotation = MKPointAnnotation()
-        
-        annotation.coordinate = newCoordinate
-        
-        return annotation
+    // MARK: Coordinate for Touchpoint
+    private func coordinateForPoint(point: CGPoint) -> CLLocationCoordinate2D {
+        return mapView.convertPoint(point, toCoordinateFromView: mapView) as CLLocationCoordinate2D
     }
     
     
@@ -188,18 +176,7 @@ class TravelLocationsMapViewController: UIViewController {
         return CoreDataStackManager.sharedInstance().managedObjectContext
     }
     
-    func fetchAllPins() -> [Pin] {
-        let fetchRequest = NSFetchRequest(entityName: "Pin")
-        do {
-            return try sharedContext.executeFetchRequest(fetchRequest) as! [Pin]
-        } catch let error as NSError {
-            print("Error in fetchAllPins: \(error.localizedDescription)")
-            return [Pin]()
-        }
-    }
-    
 }
-
 
 
 // MARK: - MKMapViewDelegate
@@ -232,25 +209,20 @@ extension TravelLocationsMapViewController: MKMapViewDelegate {
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         print("Selected!")
         if editing {
+            
             // GUARD: Is there an annotation for the mapView?
-            guard let annotation = view.annotation else {
+            guard let pin = view.annotation as? Pin else {
                 return
             }
             
-            // TODO: Find Pin object in array using coordinates
-            let latitude = annotation.coordinate.latitude
-            let longitude = annotation.coordinate.longitude
-            
-            let pin = pins.filter(){$0.latitude == latitude && $0.longitude == longitude}.first!
-            let index = pins.indexOf(pin)
-            // Remove pin from the array
-            pins.removeAtIndex(index!)
             // Remove pin from the context
             sharedContext.deleteObject(pin)
+            // Remove pin from map
+            mapView.removeAnnotation(pin)
             // Save context
             CoreDataStackManager.sharedInstance().saveContext()
             
-            view.removeFromSuperview()
+           // view.removeFromSuperview()
         }
     }
 }

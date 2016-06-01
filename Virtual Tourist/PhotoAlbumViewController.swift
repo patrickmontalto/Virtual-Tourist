@@ -106,7 +106,7 @@ class PhotoAlbumViewController: UIViewController, NSFetchedResultsControllerDele
         let fetchRequest = NSFetchRequest(entityName: "Photo")
         
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "imagePath", ascending: true)]
-        fetchRequest.predicate = NSPredicate(format: "pin == %@", self.location);
+        fetchRequest.predicate = NSPredicate(format: "pinnedLocation == %@", self.location);
         
         let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                                   managedObjectContext: self.sharedContext,

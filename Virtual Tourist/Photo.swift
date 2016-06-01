@@ -24,11 +24,11 @@ class Photo: NSManagedObject {
     }
     
     // MARK: Two Argument Init Method
-    init(dictionary: [String:AnyObject], context: NSManagedObjectContext) {
+    init(imagePath: String, context: NSManagedObjectContext) {
         let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         
-        imagePath = dictionary[Keys.ImagePath] as! String
+        self.imagePath = imagePath
     }
     
     var image: UIImage? {

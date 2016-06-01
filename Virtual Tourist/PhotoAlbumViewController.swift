@@ -22,17 +22,49 @@ class PhotoAlbumViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Set map delegate
+        mapView.delegate = self
+        
         // Set map region for current location
-        mapView.region.center = location.coordinate
         let latDelta: CLLocationDegrees = 0.02
         let lonDelta: CLLocationDegrees = 0.02
+        mapView.region.center = location.coordinate
         mapView.region.span = MKCoordinateSpanMake(latDelta, lonDelta)
+        
         // Disable map user interaction
+        mapView.userInteractionEnabled = false
+        
         // TODO: Load photos for location
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+        // Place location pin
+        mapView.addAnnotation(location)
     }
     
     @IBAction func getNewCollection(sender: AnyObject) {
         // TODO: Get new photos for location
     }
     
+}
+
+extension PhotoAlbumViewController: MKMapViewDelegate {
+    
+    // MARK: Set up pin animation and color
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+        let reuseId = "pin"
+        
+        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
+
+        if pinView == nil {
+            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+            pinView!.pinTintColor = UIColor.orangeColor()
+        } else {
+            pinView!.annotation = annotation
+        }
+        
+        return pinView
+    }
+
 }

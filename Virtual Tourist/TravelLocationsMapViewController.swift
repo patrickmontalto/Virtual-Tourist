@@ -34,10 +34,13 @@ class TravelLocationsMapViewController: UIViewController {
         // Load last user region
         loadMapRegion()
         
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
         // Populate Map with Core Data pins
         mapView.addAnnotations(fetchAllPins())
     }
-    
     // MARK: - Allow editing on MapView
     override func setEditing(editing: Bool, animated: Bool) {
         super.setEditing(editing, animated: animated)

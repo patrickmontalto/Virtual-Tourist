@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9532" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="0e7-e3-fGg">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="0e7-e3-fGg">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
-        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
@@ -23,7 +22,7 @@
             </objects>
             <point key="canvasLocation" x="-492" y="871"/>
         </scene>
-        <!--Travel Locations Map View Controller-->
+        <!--Locations-->
         <scene sceneID="Wf8-14-cqS">
             <objects>
                 <viewController id="uvL-ab-RPe" customClass="TravelLocationsMapViewController" customModule="Virtual_Tourist" customModuleProvider="target" sceneMemberID="viewController">
@@ -47,7 +46,7 @@
                             <constraint firstItem="hPo-Go-Ilp" firstAttribute="top" secondItem="2UW-lY-9PD" secondAttribute="bottom" id="tlH-o8-pB9"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="Kuz-bN-DqJ"/>
+                    <navigationItem key="navigationItem" title="Locations" id="Kuz-bN-DqJ"/>
                     <connections>
                         <outlet property="mapView" destination="hPo-Go-Ilp" id="r1D-Xw-LAa"/>
                     </connections>
@@ -68,20 +67,18 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="HFX-G5-0W7">
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="ExX-E7-uqs">
                                 <rect key="frame" x="0.0" y="20" width="600" height="580"/>
                                 <subviews>
                                     <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Txv-KQ-CxY">
-                                        <rect key="frame" x="0.0" y="0.0" width="600" height="108"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="600" height="128"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" secondItem="Txv-KQ-CxY" secondAttribute="height" multiplier="50:9" id="BX7-Ag-sNI"/>
+                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="128" id="Rx6-Ar-Nhg"/>
+                                            <constraint firstAttribute="height" constant="128" id="mvR-rI-fHR"/>
                                         </constraints>
                                     </mapView>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="tCl-m2-2dd">
-                                        <rect key="frame" x="0.0" y="108" width="600" height="417"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" secondItem="tCl-m2-2dd" secondAttribute="height" multiplier="200:139" id="dHg-04-2mK"/>
-                                        </constraints>
+                                        <rect key="frame" x="0.0" y="128" width="600" height="408"/>
                                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="DDW-ia-l8E">
                                             <size key="itemSize" width="50" height="50"/>
                                             <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -100,32 +97,37 @@
                                             </collectionViewCell>
                                         </cells>
                                     </collectionView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sak-Px-AxB">
-                                        <rect key="frame" x="239" y="525" width="122" height="55"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="55" id="bTg-o4-deG"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
-                                        <state key="normal" title="New Collection"/>
-                                        <connections>
-                                            <action selector="getNewCollection:" destination="Lrs-H0-JbR" eventType="touchUpInside" id="Mkg-Nr-Dao"/>
-                                        </connections>
-                                    </button>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Bzz-uL-Be2">
+                                        <rect key="frame" x="0.0" y="536" width="600" height="44"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sak-Px-AxB">
+                                                <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="55" id="8PW-fc-Ec4"/>
+                                                    <constraint firstAttribute="height" constant="44" id="nVf-dh-GXh"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                                <state key="normal" title="New Collection"/>
+                                                <variation key="default">
+                                                    <mask key="constraints">
+                                                        <exclude reference="8PW-fc-Ec4"/>
+                                                    </mask>
+                                                </variation>
+                                                <connections>
+                                                    <action selector="getNewCollection:" destination="Lrs-H0-JbR" eventType="touchUpInside" id="Mkg-Nr-Dao"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
                                 </subviews>
-                                <constraints>
-                                    <constraint firstItem="Txv-KQ-CxY" firstAttribute="centerX" secondItem="HFX-G5-0W7" secondAttribute="centerX" id="HnI-Cp-f1O"/>
-                                    <constraint firstItem="Txv-KQ-CxY" firstAttribute="leading" secondItem="HFX-G5-0W7" secondAttribute="leading" id="aY7-3A-1Kp"/>
-                                    <constraint firstAttribute="width" secondItem="HFX-G5-0W7" secondAttribute="height" multiplier="30:29" id="jpT-tc-8ba"/>
-                                    <constraint firstAttribute="trailing" secondItem="Txv-KQ-CxY" secondAttribute="trailing" id="vSF-kd-Wr2"/>
-                                </constraints>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="HFX-G5-0W7" firstAttribute="leading" secondItem="bbw-rg-BBa" secondAttribute="leadingMargin" constant="-20" id="Wqc-2G-8OW"/>
-                            <constraint firstItem="HFX-G5-0W7" firstAttribute="top" secondItem="nDa-0b-XWa" secondAttribute="bottom" id="et2-Sy-grR"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="HFX-G5-0W7" secondAttribute="trailing" constant="-20" id="yIo-85-yhj"/>
-                            <constraint firstItem="oK7-Ej-o9V" firstAttribute="top" secondItem="HFX-G5-0W7" secondAttribute="bottom" id="zVH-Vu-ra6"/>
+                            <constraint firstItem="ExX-E7-uqs" firstAttribute="top" secondItem="nDa-0b-XWa" secondAttribute="bottom" id="Cim-8G-ytT"/>
+                            <constraint firstAttribute="trailing" secondItem="ExX-E7-uqs" secondAttribute="trailing" id="KBk-gt-vo7"/>
+                            <constraint firstAttribute="bottom" secondItem="ExX-E7-uqs" secondAttribute="bottom" id="OAV-cK-Dry"/>
+                            <constraint firstItem="ExX-E7-uqs" firstAttribute="leading" secondItem="bbw-rg-BBa" secondAttribute="leading" id="zu8-HG-8ve"/>
                         </constraints>
                     </view>
                     <connections>

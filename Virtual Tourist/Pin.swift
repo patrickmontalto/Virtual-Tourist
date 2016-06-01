@@ -20,6 +20,7 @@ class Pin: NSManagedObject, MKAnnotation {
     // MARK: Core Data Attributes
     @NSManaged var latitude: NSNumber
     @NSManaged var longitude: NSNumber
+    @NSManaged var maxPage: NSNumber?
     @NSManaged var photos: [Photo]
     
     // MARK: Standard Core Data Init Method

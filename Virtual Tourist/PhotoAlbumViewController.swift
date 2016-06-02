@@ -17,10 +17,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     @IBOutlet var photoCollectionView: UICollectionView!
     @IBOutlet var newCollectionButton: UIButton!
     
+    @IBOutlet var activityIndicator: UIActivityIndicatorView!
+    
     // TODO: Add UIActivityIndicatorView
     
     // MARK: Location Property
     var location: Pin!
+    
+    // MARK: Counter for photos to be downloaded
+    var photosToBeLoaded: Int!
     
     // MARK: Screen dimension properties
     var screenSize: CGRect!
@@ -63,8 +68,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         // Set the delegate to this view controller
         fetchedResultsController.delegate = self
         
+        // Set photosToBeLoaded
+        photosToBeLoaded = fetchedResultsController.fetchedObjects?.count
+        
         // Subscribe to notifcation so photos can be loaded as they're downloaded
-       // NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(PhotoAlbumViewController.reloadPhotos), name: "imageDidFinishDownloading", object: nil)
+       NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(PhotoAlbumViewController.stopAnimating), name: "imagesDidFinishLoading", object: nil)
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -73,13 +81,16 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         mapView.addAnnotation(location)
         
         if location.photos.isEmpty {
+            // Start Animating Activity Indicator
+            activityIndicator.startAnimating()
             getLocationPhotos()
         }
     }
     
-    func reloadPhotos() {
+    func stopAnimating() {
         dispatch_async(dispatch_get_main_queue()) {
-            self.photoCollectionView.reloadData()
+            print("Stopping animation")
+            self.activityIndicator.stopAnimating()
         }
     }
     
@@ -103,6 +114,10 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         FlickrClient.sharedInstance.getPhotosForLocation(location) { (success, photos, errorString) in
             if success, let photos = photos {
                 print("GETTING NEW PHOTOS FOR LOCATION...")
+                
+                // Set number of photos to be downloaded
+                self.photosToBeLoaded = photos.count
+                
                 // Parse the array of photo dictionaries
                 let _ = photos.map({ (dictionary: [String:AnyObject]) -> Photo in
                     // Get imagePath
@@ -189,7 +204,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         var photoImage = UIImage()
         
         if photo.image != nil {
-            cell.activityIndicator.stopAnimating()
             photoImage = photo.image!
         } else {
             // TODO: Set placeholder image with UIActivityIndicatorView:
@@ -200,8 +214,10 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     // Set photoImage
                     photoImage = image
                     
+                    print("Grabbing the image from URL")
                     // Update the photo model
                     photo.image = photoImage
+                    // TODO: Make a call to CoreDataStackManager.save context?
                     
                 } else {
                     // Print the error string
@@ -209,16 +225,24 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 }
             })
             
-            // update the cell
-            print("2. Updating the cell.")
-            cell.imageView!.image = photoImage
         }
         
         cell.frame.size.width = (screenWidth - 16) / 3.0
         cell.frame.size.height = (screenWidth - 16) / 3.0
-        print("3. Setting the image and stop animating.")
-        cell.imageView!.image = photoImage
-        cell.activityIndicator.stopAnimating()
+
+        // update the cell on main thread
+        print("Updating the cell on Main Thread.")
+        dispatch_async(dispatch_get_main_queue(), {
+            cell.imageView!.image = photoImage
+        })
+
+        
+        print("Photos remaining to be downloaded: \(photosToBeLoaded)")
+        photosToBeLoaded = photosToBeLoaded - 1
+        if photosToBeLoaded == 0 {
+            print("Finsihed")
+            sendNotification("imagesDidFinishLoading")
+        }
     }
     
     
@@ -264,48 +288,54 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
         
         return pinView
     }
+    
+    private func sendNotification(notificationName: String) {
+        NSNotificationCenter.defaultCenter().postNotificationName(notificationName, object: nil)
+    }
 
 }
 
 // MARK: Fetched Results Controller Protocol
 extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
-    
-    func controllerWillChangeContent(controller: NSFetchedResultsController) {
-        insertedIndexPaths = [NSIndexPath]()
-        deletedIndexPaths = [NSIndexPath]()
-        updatedIndexPaths = [NSIndexPath]()
-    }
-    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
-        switch type {
-        case .Insert:
-            insertedIndexPaths!.append(newIndexPath!)
-        case .Delete:
-            deletedIndexPaths!.append(indexPath!)
-        case .Update:
-            updatedIndexPaths!.append(indexPath!)
-        default:
-            break
-        }
-    }
-    
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
-        if controller.fetchedObjects?.count > 0 {
-            // Hide no images label
-            // Enable new photo collection button
-        }
-        
-        photoCollectionView.performBatchUpdates({
-            for indexPath in self.insertedIndexPaths! {
-                print("inserting...")
-                self.photoCollectionView.insertItemsAtIndexPaths([indexPath])
-            }
-            for indexPath in self.deletedIndexPaths! {
-                self.photoCollectionView.deleteItemsAtIndexPaths([indexPath])
-            }
-            for indexPath in self.updatedIndexPaths! {
-                print("updating...")
-                self.photoCollectionView.reloadItemsAtIndexPaths([indexPath])
-            }
-            }, completion: nil)
-    }
+//    
+//    func controllerWillChangeContent(controller: NSFetchedResultsController) {
+//        insertedIndexPaths = [NSIndexPath]()
+//        deletedIndexPaths = [NSIndexPath]()
+//        updatedIndexPaths = [NSIndexPath]()
+// 
+//    }
+//    
+//    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+//        switch type {
+//        case .Insert:
+//            insertedIndexPaths!.append(newIndexPath!)
+//        case .Delete:
+//            deletedIndexPaths!.append(indexPath!)
+//        case .Update:
+//            updatedIndexPaths!.append(indexPath!)
+//        default:
+//            break
+//        }
+//    }
+//    
+//    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+//        if controller.fetchedObjects?.count > 0 {
+//            // Hide no images label
+//            // Enable new photo collection button
+//        }
+//        
+//        photoCollectionView.performBatchUpdates({
+//            for indexPath in self.insertedIndexPaths! {
+//                print("inserting...")
+//                self.photoCollectionView.insertItemsAtIndexPaths([indexPath])
+//            }
+//            for indexPath in self.deletedIndexPaths! {
+//                self.photoCollectionView.deleteItemsAtIndexPaths([indexPath])
+//            }
+//            for indexPath in self.updatedIndexPaths! {
+//                print("updating...")
+//                self.photoCollectionView.reloadItemsAtIndexPaths([indexPath])
+//            }
+//            }, completion: nil)
+//    }
 }

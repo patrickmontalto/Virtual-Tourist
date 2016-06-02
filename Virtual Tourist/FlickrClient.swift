@@ -92,9 +92,6 @@ class FlickrClient: NSObject {
             let data = NSData(contentsOfURL: url),
             let image = UIImage(data: data){
             
-            // Post notification when image finishes downloading.
-            sendNotification("imageDidFinishDownloading")
-            
             completionHandler(image: image, errorString: nil)
             
         } else {
@@ -103,9 +100,6 @@ class FlickrClient: NSObject {
         }
     }
     
-    private func sendNotification(notificationName: String) {
-        NSNotificationCenter.defaultCenter().postNotificationName(notificationName, object: nil)
-    }
 }
 
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="0e7-e3-fGg">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10116" systemVersion="15E2066" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="0e7-e3-fGg">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
@@ -143,16 +143,22 @@
                                     </stackView>
                                 </subviews>
                             </stackView>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="dcR-Nx-tIx">
+                                <rect key="frame" x="281" y="334" width="37" height="37"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="dcR-Nx-tIx" firstAttribute="centerY" secondItem="tCl-m2-2dd" secondAttribute="centerY" id="C8q-7c-Mqi"/>
                             <constraint firstItem="ExX-E7-uqs" firstAttribute="top" secondItem="nDa-0b-XWa" secondAttribute="bottom" id="Cim-8G-ytT"/>
+                            <constraint firstItem="dcR-Nx-tIx" firstAttribute="centerX" secondItem="tCl-m2-2dd" secondAttribute="centerX" id="Gn5-FI-dNa"/>
                             <constraint firstAttribute="trailing" secondItem="ExX-E7-uqs" secondAttribute="trailing" id="KBk-gt-vo7"/>
                             <constraint firstAttribute="bottom" secondItem="ExX-E7-uqs" secondAttribute="bottom" id="OAV-cK-Dry"/>
                             <constraint firstItem="ExX-E7-uqs" firstAttribute="leading" secondItem="bbw-rg-BBa" secondAttribute="leading" id="zu8-HG-8ve"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="activityIndicator" destination="dcR-Nx-tIx" id="vV8-1J-mec"/>
                         <outlet property="mapView" destination="Txv-KQ-CxY" id="eIt-Hp-wyt"/>
                         <outlet property="newCollectionButton" destination="sak-Px-AxB" id="bx1-6u-fKs"/>
                         <outlet property="photoCollectionView" destination="tCl-m2-2dd" id="aVZ-zO-hEH"/>

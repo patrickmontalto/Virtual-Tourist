@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 // MARK: - FlickrClient: NSObject
 
@@ -26,7 +27,7 @@ class FlickrClient: NSObject {
         // Need to get a different page every time after finding out how many pages there are
         var page: Int {
             if let maxPage = location.maxPage as? Int {
-                return Int(arc4random_uniform(UInt32(maxPage))) + 1
+                return min(Int(arc4random_uniform(UInt32(maxPage))) + 1, 99)
             } else {
                 return 1
             }
@@ -82,6 +83,28 @@ class FlickrClient: NSObject {
             // Success case: return photoArray
             completionHandler(success: true, photos: photoArray, errorString: nil)
         }
+    }
+    
+    
+    // MARK: - Get Image data from file path
+    func  getImageFromFilePath(urlString: String, completionHandler: (image: UIImage?, errorString: String?) -> Void)  {
+        if let url = NSURL(string: urlString),
+            let data = NSData(contentsOfURL: url),
+            let image = UIImage(data: data){
+            
+            // Post notification when image finishes downloading.
+            sendNotification("imageDidFinishDownloading")
+            
+            completionHandler(image: image, errorString: nil)
+            
+        } else {
+            
+            completionHandler(image: nil, errorString: "Error downloading image from url")
+        }
+    }
+    
+    private func sendNotification(notificationName: String) {
+        NSNotificationCenter.defaultCenter().postNotificationName(notificationName, object: nil)
     }
 }
 

@@ -79,6 +79,7 @@
                                     </mapView>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="tCl-m2-2dd">
                                         <rect key="frame" x="0.0" y="128" width="600" height="408"/>
+                                        <color key="backgroundColor" red="0.81176470590000005" green="0.81176470590000005" blue="0.81176470590000005" alpha="1" colorSpace="calibratedRGB"/>
                                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="DDW-ia-l8E">
                                             <size key="itemSize" width="180" height="180"/>
                                             <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -86,26 +87,33 @@
                                             <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         </collectionViewFlowLayout>
                                         <cells>
-                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="PhotoCell" id="s0s-G6-Kax" customClass="TaskCancelingCollectionViewCell" customModule="Virtual_Tourist" customModuleProvider="target">
+                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="PhotoCell" id="s0s-G6-Kax" customClass="PhotoCollectionViewCell" customModule="Virtual_Tourist" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="180" height="180"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                                     <rect key="frame" x="0.0" y="0.0" width="180" height="180"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="QYA-ZF-Jdr">
+                                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="Hcu-I6-FHi">
+                                                            <rect key="frame" x="72" y="71" width="37" height="37"/>
+                                                        </activityIndicatorView>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="QYA-ZF-Jdr">
                                                             <rect key="frame" x="0.0" y="0.0" width="180" height="180"/>
                                                         </imageView>
                                                     </subviews>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                                 </view>
+                                                <color key="backgroundColor" red="0.102123223" green="0.20063122189999999" blue="0.55675080129999999" alpha="1" colorSpace="calibratedRGB"/>
                                                 <constraints>
+                                                    <constraint firstItem="Hcu-I6-FHi" firstAttribute="centerY" secondItem="s0s-G6-Kax" secondAttribute="centerY" id="5BK-Ij-TE8"/>
                                                     <constraint firstItem="QYA-ZF-Jdr" firstAttribute="top" secondItem="s0s-G6-Kax" secondAttribute="top" id="RkC-SJ-zqf"/>
                                                     <constraint firstAttribute="trailing" secondItem="QYA-ZF-Jdr" secondAttribute="trailing" id="YRj-3X-Po6"/>
                                                     <constraint firstItem="QYA-ZF-Jdr" firstAttribute="leading" secondItem="s0s-G6-Kax" secondAttribute="leading" id="ivl-XS-TlB"/>
+                                                    <constraint firstItem="Hcu-I6-FHi" firstAttribute="centerX" secondItem="s0s-G6-Kax" secondAttribute="centerX" id="lkz-H8-TZR"/>
                                                     <constraint firstAttribute="bottom" secondItem="QYA-ZF-Jdr" secondAttribute="bottom" id="mbM-4l-LlN"/>
                                                 </constraints>
                                                 <connections>
+                                                    <outlet property="activityIndicator" destination="Hcu-I6-FHi" id="GAW-0e-JLW"/>
                                                     <outlet property="imageView" destination="QYA-ZF-Jdr" id="sSH-8c-mwL"/>
                                                 </connections>
                                             </collectionViewCell>

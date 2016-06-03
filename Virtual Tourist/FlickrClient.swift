@@ -27,7 +27,7 @@ class FlickrClient: NSObject {
         // Need to get a different page every time after finding out how many pages there are
         var page: Int {
             if let maxPage = location.maxPage as? Int {
-                return min(Int(arc4random_uniform(UInt32(maxPage))) + 1, 99)
+                return min(Int(arc4random_uniform(UInt32(maxPage))) + 1, 20)
             } else {
                 return 1
             }

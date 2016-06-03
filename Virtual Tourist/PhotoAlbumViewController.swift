@@ -218,6 +218,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     // Update the photo model
                     photo.image = photoImage
                     // TODO: Make a call to CoreDataStackManager.save context?
+                    CoreDataStackManager.sharedInstance().saveContext()
+                    
+                    print("Photos remaining to be downloaded: \(self.photosToBeLoaded)")
+                    self.photosToBeLoaded = self.photosToBeLoaded - 1
+                    if self.photosToBeLoaded == 0 {
+                        print("Finished")
+                        self.sendNotification("imagesDidFinishLoading")
+                    }
+                    
                     
                 } else {
                     // Print the error string
@@ -231,18 +240,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         cell.frame.size.height = (screenWidth - 16) / 3.0
 
         // update the cell on main thread
-        print("Updating the cell on Main Thread.")
         dispatch_async(dispatch_get_main_queue(), {
             cell.imageView!.image = photoImage
         })
-
-        
-        print("Photos remaining to be downloaded: \(photosToBeLoaded)")
-        photosToBeLoaded = photosToBeLoaded - 1
-        if photosToBeLoaded == 0 {
-            print("Finsihed")
-            sendNotification("imagesDidFinishLoading")
-        }
     }
     
     
@@ -297,7 +297,7 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 
 // MARK: Fetched Results Controller Protocol
 extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
-//    
+    
 //    func controllerWillChangeContent(controller: NSFetchedResultsController) {
 //        insertedIndexPaths = [NSIndexPath]()
 //        deletedIndexPaths = [NSIndexPath]()
@@ -326,14 +326,12 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
 //        
 //        photoCollectionView.performBatchUpdates({
 //            for indexPath in self.insertedIndexPaths! {
-//                print("inserting...")
 //                self.photoCollectionView.insertItemsAtIndexPaths([indexPath])
 //            }
 //            for indexPath in self.deletedIndexPaths! {
 //                self.photoCollectionView.deleteItemsAtIndexPaths([indexPath])
 //            }
 //            for indexPath in self.updatedIndexPaths! {
-//                print("updating...")
 //                self.photoCollectionView.reloadItemsAtIndexPaths([indexPath])
 //            }
 //            }, completion: nil)

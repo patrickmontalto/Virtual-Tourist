@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import CoreData 
 
 // MARK: - FlickrClient: NSObject
 
@@ -17,7 +18,7 @@ class FlickrClient: NSObject {
     static let sharedInstance = FlickrClient()
     
     // TODO: - Get X Photos for location (Pin)
-    func getPhotosForLocation(location: Pin, completionHandler: (success: Bool, photos: [[String:AnyObject]]?, errorString: String?) -> Void) {
+    func getPhotosForLocation(location: Pin, completionHandler: (success: Bool, errorString: String?) -> Void) {
         // Set accuracy to "City"
         let accuracy = 11
         
@@ -49,7 +50,7 @@ class FlickrClient: NSObject {
         
         // Build request
         guard let request = APIClient().buildRequestWithHTTPMethod(APIClient.HTTPMethods.GET, parameters: parameters) else {
-            completionHandler(success: false, photos: nil, errorString: "The request could not be processed")
+            completionHandler(success: false, errorString: "The request could not be processed")
             return
         }
         
@@ -57,55 +58,86 @@ class FlickrClient: NSObject {
         APIClient().taskForRequest(request) { (results, error) in
             /* Check for error */
             guard error == nil else {
-                completionHandler(success: false, photos: nil, errorString: "An error occurred getting photos.")
+                completionHandler(success: false, errorString: "An error occurred getting photos.")
                 return
             }
             
             /* Check for photos dictionary */
             guard let photosDictionary = results[JSONKeys.Photos] as? [String:AnyObject] else {
-                completionHandler(success: false, photos: nil, errorString: "Error: photos dictionary not found in result.")
+                completionHandler(success: false, errorString: "Error: photos dictionary not found in result.")
                 return
             }
             
             // Check total number of pages and set for current location
             if let totalPages = photosDictionary[JSONKeys.Pages] as? Int {
                 location.maxPage = NSNumber(integer: totalPages)
-                // Save context
-                CoreDataStackManager.sharedInstance().saveContext()
+                // TODO: Save context?
+                // CoreDataStackManager.sharedInstance().saveContext()
             }
             
             /* Check for photos array of dictionaries */
             guard let photoArray = photosDictionary[JSONKeys.Photo] as? [[String:AnyObject]] else {
-                completionHandler(success: false, photos: nil, errorString: "Error: photo array not found in photos dictionary.")
+                completionHandler(success: false, errorString: "Error: photo array not found in photos dictionary.")
                 return
             }
             
+            // Now we have an array of photo dictionaries. Create the photo and download the image for each
+            for photo in photoArray {
+                // Get URL of image
+                let photoURLString = photo[JSONKeys.SmallURL] as! String
+                
+                // Create new Photo object
+                let newPhoto = Photo(pin: location, photoURL: photoURLString, context: self.sharedContext)
+                
+                // Download photo using URL
+                self.getImageForPhoto(newPhoto, completionHandler: { (success, errorString) in
+                    
+                    // Save context
+                    dispatch_async(dispatch_get_main_queue(), {
+                        CoreDataStackManager.sharedInstance().saveContext()
+                    })
+                })
+                
+            }
+            completionHandler(success: true, errorString: nil)
             // Success case: return photoArray
-            completionHandler(success: true, photos: photoArray, errorString: nil)
+            //completionHandler(success: true, photos: photoArray, errorString: nil)
         }
     }
     
     
     // MARK: - Get Image data from file path
-    func  getImageFromFilePath(urlString: String, completionHandler: (image: UIImage?, errorString: String?) -> Void)  {
-        if let url = NSURL(string: urlString),
-            let data = NSData(contentsOfURL: url),
-            let image = UIImage(data: data){
+    func  getImageForPhoto(photo: Photo, completionHandler: (success: Bool, errorString: String?) -> Void)  {
+        let imageURLString = photo.url
+        
+        if let url = NSURL(string: imageURLString), let data = NSData(contentsOfURL: url) {
             
-            completionHandler(image: image, errorString: nil)
+            // Get filename and file URL
+            let fileName = NSString(string: imageURLString).lastPathComponent
+            let dirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0]
+            let pathComponents = [dirPath, fileName]
+            let fileURL = NSURL.fileURLWithPathComponents(pathComponents)!
+            
+            // Save File
+            NSFileManager.defaultManager().createFileAtPath(fileURL.path!, contents: data, attributes: nil)
+            
+            // Update Photo Model
+            photo.filePath = fileURL.path!
+            
+            completionHandler(success: true, errorString: nil)
             
         } else {
+            // Update Photo Model for error case
+            photo.filePath = "error"
             
-            completionHandler(image: nil, errorString: "Error downloading image from url")
+            completionHandler(success: false, errorString: "Error downloading image from url")
         }
     }
     
-    // MARK: - Shared Image Cache
-    
-    struct Caches {
-        static let imageCache = ImageCache()
+    // MARK: - Shared Context
+    var sharedContext: NSManagedObjectContext {
+        return CoreDataStackManager.sharedInstance().managedObjectContext
     }
-    
 }
 
 

@@ -10,12 +10,10 @@ import UIKit
 import CoreData
 
 class Photo: NSManagedObject {
-    struct Keys {
-        static let ImagePath = "imagePath"
-    }
-    
+ 
     // MARK: Core Data Attributes
-    @NSManaged var imagePath: String?
+    @NSManaged var url: String
+    @NSManaged var filePath: String?
     @NSManaged var pinnedLocation: Pin?
     
     // MARK: Standard Core Data Init Method
@@ -24,21 +22,29 @@ class Photo: NSManagedObject {
     }
     
     // MARK: Two Argument Init Method
-    init(imagePath: String, context: NSManagedObjectContext) {
+    init(pin: Pin, photoURL: String, context: NSManagedObjectContext) {
         let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: context)!
+        
         super.init(entity: entity, insertIntoManagedObjectContext: context)
         
-        self.imagePath = imagePath
+        self.url = photoURL
+        self.pinnedLocation = pin
     }
     
     var image: UIImage? {
-        
-        get {
-            return FlickrClient.Caches.imageCache.imageWithIdentifier(imagePath!)
+        if let filePath = filePath {
+            
+            if filePath == "error" {
+                return UIImage(named: "noImage")
+            }
+            
+            let fileName = NSString(string: filePath).lastPathComponent
+            let dirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] 
+            let pathComponents = [dirPath, fileName]
+            let fileURL = NSURL.fileURLWithPathComponents(pathComponents)!
+            
+            return UIImage(contentsOfFile: fileURL.path!)
         }
-        
-        set {
-            FlickrClient.Caches.imageCache.storeImage(newValue, withIdentifier: imagePath!)
-        }
+        return nil
     }
 }

@@ -8,15 +8,7 @@
 
 import UIKit
 
-class ImageCacher {
-    
-    // MARK: Singleton
-    class func sharedCacher() -> ImageCacher {
-        struct Static {
-            static let cacher = ImageCacher()
-        }
-        return Static.cacher
-    }
+class ImageCache {
     
     private var inMemoryCache = NSCache()
     
@@ -76,5 +68,4 @@ class ImageCacher {
         
         return fullURL.path!
     }
-    
 }

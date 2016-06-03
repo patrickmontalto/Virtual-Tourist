@@ -15,7 +15,7 @@ class Photo: NSManagedObject {
     }
     
     // MARK: Core Data Attributes
-    @NSManaged var imagePath: String // Do we need an ID also?
+    @NSManaged var imagePath: String?
     @NSManaged var pinnedLocation: Pin?
     
     // MARK: Standard Core Data Init Method
@@ -32,7 +32,13 @@ class Photo: NSManagedObject {
     }
     
     var image: UIImage? {
-        get { return ImageCacher.sharedCacher().imageWithIdentifier(imagePath) }
-        set { ImageCacher.sharedCacher().storeImage(newValue, withIdentifier: imagePath) }
+        
+        get {
+            return FlickrClient.Caches.imageCache.imageWithIdentifier(imagePath!)
+        }
+        
+        set {
+            FlickrClient.Caches.imageCache.storeImage(newValue, withIdentifier: imagePath!)
+        }
     }
 }

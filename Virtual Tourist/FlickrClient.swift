@@ -17,7 +17,7 @@ class FlickrClient: NSObject {
     // MARK: - Singleton
     static let sharedInstance = FlickrClient()
     
-    // TODO: - Get X Photos for location (Pin)
+    // Get Photos for location (Pin)
     func getPhotosForLocation(location: Pin, completionHandler: (success: Bool, errorString: String?) -> Void) {
         // Set accuracy to "City"
         let accuracy = 11
@@ -70,9 +70,8 @@ class FlickrClient: NSObject {
             
             // Check total number of pages and set for current location
             if let totalPages = photosDictionary[JSONKeys.Pages] as? Int {
-                location.maxPage = NSNumber(integer: totalPages)
-                // TODO: Save context?
-                // CoreDataStackManager.sharedInstance().saveContext()
+                // The max page returned needs to be from 1 to the maxPage or 20, whichever is higher.
+                location.maxPage = NSNumber(integer: min((totalPages), 20))
             }
             
             /* Check for photos array of dictionaries */
@@ -89,16 +88,24 @@ class FlickrClient: NSObject {
                 // Create new Photo object
                 let newPhoto = Photo(pin: location, photoURL: photoURLString, context: self.sharedContext)
                 
+                // Save context??
+                dispatch_async(dispatch_get_main_queue(), {
+                    CoreDataStackManager.sharedInstance().saveContext()
+                })
+                
                 // Download photo using URL
                 self.getImageForPhoto(newPhoto, completionHandler: { (success, errorString) in
                     
-                    // Save context
-                    dispatch_async(dispatch_get_main_queue(), {
-                        CoreDataStackManager.sharedInstance().saveContext()
-                    })
+//                    // TODO: Save context??
+//                    dispatch_async(dispatch_get_main_queue(), {
+//                        print("Got image for photo. Saving Context...")
+//                        CoreDataStackManager.sharedInstance().saveContext()
+//                    })
                 })
                 
             }
+            print("Got images for all photos")
+            CoreDataStackManager.sharedInstance().saveContext()
             completionHandler(success: true, errorString: nil)
             // Success case: return photoArray
             //completionHandler(success: true, photos: photoArray, errorString: nil)

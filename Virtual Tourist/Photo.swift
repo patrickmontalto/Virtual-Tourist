@@ -47,4 +47,24 @@ class Photo: NSManagedObject {
         }
         return nil
     }
+    
+    //MARK: - Delete file when delete managed object
+    
+    override func prepareForDeletion() {
+        
+        if let filePath = filePath {
+            
+            let fileName = NSString(string: filePath).lastPathComponent
+            
+            let dirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0]
+            let pathArray = [dirPath, fileName]
+            let fileURL = NSURL.fileURLWithPathComponents(pathArray)!
+            
+            do {
+                try NSFileManager.defaultManager().removeItemAtURL(fileURL)
+            } catch _ {
+            }
+        }
+    }
+
 }

@@ -62,12 +62,13 @@ class TravelLocationsMapViewController: UIViewController {
         let pin = Pin(latitudeDouble: touchedCoordinate.latitude, longitudeDouble: touchedCoordinate.longitude, context: sharedContext)
         // Add pin to the map
         mapView.addAnnotation(pin)
+        // Begin getting photos for Pin
+        fetchPhotosForPin(pin)
         // Save context
         CoreDataStackManager.sharedInstance().saveContext()
     }
     
     func fetchAllPins() -> [Pin] {
-        
         // Create the Fetch Request
         let fetchRequest = NSFetchRequest(entityName: "Pin")
         // Execute the Fetch Request
@@ -80,6 +81,27 @@ class TravelLocationsMapViewController: UIViewController {
         }
     }
     
+    // fetch all photos for a selected Pin
+    func fetchPhotosForPin(pin: Pin) {
+        // TODO: Debugging
+        print("Fetching photos for new location...")
+        FlickrClient.sharedInstance.getPhotosForLocation(pin, completionHandler: {
+            success, errorString in
+            
+            if success {
+                
+                //save the new Photo to Core Data
+                dispatch_async(dispatch_get_main_queue(), {
+                    CoreDataStackManager.sharedInstance().saveContext()
+                })
+            } else {
+                
+                dispatch_async(dispatch_get_main_queue(), {
+                    // TODO: Error with request.
+                })
+            }
+        })
+    }
     
     // MARK: Translate View for Editing Instructions
     private func translateVerticalForEditingState(editing: Bool) {

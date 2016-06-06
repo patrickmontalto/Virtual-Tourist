@@ -25,10 +25,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     // Keep track of tapped for deletion
     var selectedIndexes = [NSIndexPath]()
-    
-    // Keep track of photos to be downloaded 
-    var photosToBeDownloaded = Int()
-    
     // Keep the changes. We will keep track of insertions, deletions, and updates.
     var insertedIndexPaths: [NSIndexPath]!
     var deletedIndexPaths: [NSIndexPath]!
@@ -66,9 +62,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         do {
             try fetchedResultsController.performFetch()
         } catch {}
-        
-        // Set the delegate to this view controller
-        fetchedResultsController.delegate = self
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -104,27 +97,29 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     // MARK: - Get Location Photos
     func getLocationPhotos() {
-        FlickrClient.sharedInstance.getPhotosForLocation(location) { (success, photos, errorString) in
-            if let errorString = errorString {
-                print(errorString)
-            } else {
-                // Parse the array of movies dictionaries
-                let _ = photos!.map() { (dictionary: [String : AnyObject]) -> Photo in
-                    // Get imagePath
-                    let imagePath = dictionary[FlickrClient.JSONKeys.SmallURL] as! String
-                    
-                    let photo = Photo(imagePath: imagePath, context: self.sharedContext)
-                    
-                    photo.pinnedLocation = self.location
-                    
-                    return photo
-                }
-                // Update the collectionView on the main thread
+        // Disable button
+        newCollectionButton.enabled = false
+        
+        // Download a new set of photos
+        FlickrClient.sharedInstance.getPhotosForLocation(location, completionHandler: {
+            success, errorString in
+            
+            if success {
+                
+                //save and enable the button
                 dispatch_async(dispatch_get_main_queue(), {
-                    self.photoCollectionView.reloadData()
+                    CoreDataStackManager.sharedInstance().saveContext()
+                    self.newCollectionButton.enabled = true
+                })
+            } else {
+                
+                //show error alert and enable button
+                dispatch_async(dispatch_get_main_queue(), {
+                    // TODO: Display alert to user notifying them of errorString
+                    self.newCollectionButton.enabled = true
                 })
             }
-        }
+        })
     }
     
     // MARK: - Core Data Convenience
@@ -135,21 +130,25 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     // Mark: - Fetched Results Controller
     
+    // fetchedResultsController
     lazy var fetchedResultsController: NSFetchedResultsController = {
         
+        //Create fetch request for photos which match the sent Pin.
         let fetchRequest = NSFetchRequest(entityName: "Photo")
+        fetchRequest.predicate = NSPredicate(format: "pinnedLocation == %@", self.location)
+        fetchRequest.sortDescriptors = []
         
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "imagePath", ascending: true)]
-        fetchRequest.predicate = NSPredicate(format: "pinnedLocation == %@", self.location);
-        
+        //Create fetched results controller with the new fetch request.
         let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                                   managedObjectContext: self.sharedContext,
                                                                   sectionNameKeyPath: nil,
                                                                   cacheName: nil)
         
-        return fetchedResultsController
+        fetchedResultsController.delegate = self
         
+        return fetchedResultsController
     }()
+
 
     // MARK: - Collection View
     
@@ -185,29 +184,22 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         insertedIndexPaths = [NSIndexPath]()
         deletedIndexPaths = [NSIndexPath]()
         updatedIndexPaths = [NSIndexPath]()
-        
-        print("in controllerWillChangeContent")
     }
     
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+        //add indexPath to appropriate array with type of change
         switch type {
         case .Insert:
-            print("Insert an item")
             insertedIndexPaths.append(newIndexPath!)
-            break
         case .Delete:
-            print("Delete an item")
             deletedIndexPaths.append(indexPath!)
-            break
         case .Update:
-            print("Update an item")
             updatedIndexPaths.append(indexPath!)
-            break
-        case .Move:
-            print("Move an item. We don't expect to see this in this app.")
+        default:
             break
         }
     }
+    
     
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
         
@@ -226,58 +218,48 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             for indexPath in self.deletedIndexPaths {
                 self.photoCollectionView.deleteItemsAtIndexPaths([indexPath])
             }
-
+            
             for indexPath in self.updatedIndexPaths {
                 self.photoCollectionView.reloadItemsAtIndexPaths([indexPath])
             }
             
             }, completion: nil)
     }
+
     
     
     // MARK: - Configure Cell
     func configureCell(cell: PhotoCollectionViewCell, atIndexPath indexPath: NSIndexPath) {
         let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
         
-        // TODO: Create a photoPlaceholder
-        var image = UIImage(named: "photoPlaceholder")
-        if photo.imagePath == nil || photo.imagePath == "" {
-            // TODO: Create a noImage image placeholder
-            image = UIImage(named: "noImage")!
-        } else if photo.image != nil {
-            image = photo.image!
-        }
-        
-        else {
-            // Manually download the image. NOTE: Not using a task here
-            FlickrClient.sharedInstance.getImageFromFilePath(photo.imagePath!, completionHandler: { (image, errorString) in
-                print("Getting image from filePath...")
-                if let errorString = errorString {
-                    print(errorString)
-                }
-
-                if let image = image {
-                    
-                    // update the model, so that the information gets cached
-                    photo.image = image
-                    
-                    // Update the cell later, on the main thread
-                    dispatch_async(dispatch_get_main_queue()) {
-                        print("Setting cell image from getImageFromFilePath")
-                        cell.imageView.image = image
-                    }
-                }
-            })
+        //update cell properties
+        if photo.image != nil {
             
+            cell.activityIndicator.stopAnimating()
+            cell.imageView.alpha = 0.0
+            cell.imageView.image = photo.image
+            
+            UIView.animateWithDuration(0.2,
+                                       animations: { cell.imageView.alpha = 1.0 })
         }
-        print("setting cell image...")
-        cell.imageView.image = image
+    }
+    
+    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         
-//        if let index = selectedIndexes.indexOf(indexPath) {
-//            cell.colorPanel.alpha = 0.05
-//        } else {
-//            cell.colorPanel.alpha = 1.0
-//        }
+        let cell = photoCollectionView.cellForItemAtIndexPath(indexPath) as! PhotoCollectionViewCell
+        toggleSelectedStateForCell(cell, atIndexPath: indexPath)
+    }
+    
+    func toggleSelectedStateForCell(cell: PhotoCollectionViewCell, atIndexPath indexPath: NSIndexPath) {
+        // Either add or remove from index path
+        if selectedIndexes.contains(indexPath) {
+            // Remove from selected indexes array and reset alpha
+            selectedIndexes.removeAtIndex(selectedIndexes.indexOf(indexPath)!)
+            cell.alpha = 1.0
+        } else {
+            selectedIndexes.append(indexPath)
+            cell.alpha = 0.5
+        }
     }
     
     
@@ -324,8 +306,4 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
         return pinView
     }
     
-    private func sendNotification(notificationName: String) {
-        NSNotificationCenter.defaultCenter().postNotificationName(notificationName, object: nil)
-    }
-
 }

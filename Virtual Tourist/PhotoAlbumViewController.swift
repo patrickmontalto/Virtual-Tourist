@@ -35,6 +35,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     var screenWidth: CGFloat!
     var screenHeight: CGFloat!
     
+    // Button tint color
+    var tintColor: UIColor!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Set map delegate
@@ -62,6 +65,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         do {
             try fetchedResultsController.performFetch()
         } catch {}
+        
+        // Get default tint color
+        tintColor = newCollectionButton.tintColor
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -76,30 +82,56 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         }
     }
     
-    func stopAnimating() {
+    func startAnimatingActivityIndicator() {
         dispatch_async(dispatch_get_main_queue()) {
-            print("Stopping animation")
+            self.activityIndicator.startAnimating()
+        }
+    }
+    
+    func stopAnimatingActivityIndicator() {
+        dispatch_async(dispatch_get_main_queue()) {
             self.activityIndicator.stopAnimating()
         }
     }
     
     // MARK: - Get new photos for location
     @IBAction func getNewCollection(sender: AnyObject) {
-        // Remove current photos for location
-        for photo in fetchedResultsController.fetchedObjects as! [Photo] {
-            sharedContext.deleteObject(photo)
+        
+        // Delete selected photos
+        if selectedIndexes.count > 0 {
+            
+            // Delete the items at the indexes in the selectedIndexes
+            for index in selectedIndexes {
+                sharedContext.deleteObject(fetchedResultsController.objectAtIndexPath(index) as! Photo)
+            }
+            // Save context
+            CoreDataStackManager.sharedInstance().saveContext()
+            // Empty indexes and update the button
+            selectedIndexes = []
+            // Update the button
+            toggleNewCollectionButton()
+        } else {
+            // Delete all photos and get new photos
+            
+            // Disable button interaction
+            newCollectionButton.userInteractionEnabled = false
+            
+            // Animate activity indicator view
+            startAnimatingActivityIndicator()
+            
+            // Remove current photos for location
+            for photo in fetchedResultsController.fetchedObjects as! [Photo] {
+                sharedContext.deleteObject(photo)
+            }
+            // Save context?
+            CoreDataStackManager.sharedInstance().saveContext()
+            // getLocationPhotos
+            getLocationPhotos()
         }
-        // Save context?
-        CoreDataStackManager.sharedInstance().saveContext()
-        // getLocationPhotos
-        getLocationPhotos()
     }
     
     // MARK: - Get Location Photos
     func getLocationPhotos() {
-        // Disable button
-        newCollectionButton.enabled = false
-        
         // Download a new set of photos
         FlickrClient.sharedInstance.getPhotosForLocation(location, completionHandler: {
             success, errorString in
@@ -109,14 +141,14 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 //save and enable the button
                 dispatch_async(dispatch_get_main_queue(), {
                     CoreDataStackManager.sharedInstance().saveContext()
-                    self.newCollectionButton.enabled = true
+                    self.newCollectionButton.userInteractionEnabled = true
                 })
             } else {
                 
                 //show error alert and enable button
                 dispatch_async(dispatch_get_main_queue(), {
                     // TODO: Display alert to user notifying them of errorString
-                    self.newCollectionButton.enabled = true
+                    self.newCollectionButton.userInteractionEnabled = true
                 })
             }
         })
@@ -152,16 +184,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
 
     // MARK: - Collection View
     
-    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
-        return fetchedResultsController.sections?.count ?? 0
-    }
+//    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
+//        return fetchedResultsController.sections?.count ?? 0
+//    }
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         //Get section info from the fetched results controller...
         if let sectionInfo = fetchedResultsController.sections?[section] {
             return sectionInfo.numberOfObjects
         }
-        
         return 1
     }
     
@@ -208,7 +239,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             newCollectionButton.enabled = true
         }
         
-        //Make the relevant updates to the collectionView once Core Data has finished its changes.
         photoCollectionView.performBatchUpdates({
             
             for indexPath in self.insertedIndexPaths {
@@ -222,8 +252,28 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             for indexPath in self.updatedIndexPaths {
                 self.photoCollectionView.reloadItemsAtIndexPaths([indexPath])
             }
-            
-            }, completion: nil)
+            }) { (true) in
+                self.stopAnimatingActivityIndicator()
+        }
+        
+//        //Make the relevant updates to the collectionView once Core Data has finished its changes.
+//        photoCollectionView.performBatchUpdates({
+//            
+//            for indexPath in self.insertedIndexPaths {
+//                self.photoCollectionView.insertItemsAtIndexPaths([indexPath])
+//            }
+//            
+//            for indexPath in self.deletedIndexPaths {
+//                self.photoCollectionView.deleteItemsAtIndexPaths([indexPath])
+//            }
+//            
+//            for indexPath in self.updatedIndexPaths {
+//                self.photoCollectionView.reloadItemsAtIndexPaths([indexPath])
+//            }
+//            
+//            }, completion: nil)
+
+        
     }
 
     
@@ -248,6 +298,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         
         let cell = photoCollectionView.cellForItemAtIndexPath(indexPath) as! PhotoCollectionViewCell
         toggleSelectedStateForCell(cell, atIndexPath: indexPath)
+        toggleNewCollectionButton()
     }
     
     func toggleSelectedStateForCell(cell: PhotoCollectionViewCell, atIndexPath indexPath: NSIndexPath) {
@@ -259,6 +310,17 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         } else {
             selectedIndexes.append(indexPath)
             cell.alpha = 0.5
+        }
+    }
+    
+    // MARK: - Toggle button for deletion state
+    func toggleNewCollectionButton() {
+        if selectedIndexes.count > 0 {
+            self.newCollectionButton.tintColor = UIColor.redColor()
+            self.newCollectionButton.setTitle("Delete selected photo(s)", forState: .Normal)
+        } else {
+            self.newCollectionButton.tintColor = tintColor
+            self.newCollectionButton.setTitle("New Collection", forState: .Normal)
         }
     }
     

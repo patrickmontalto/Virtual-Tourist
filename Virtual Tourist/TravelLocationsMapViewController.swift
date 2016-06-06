@@ -84,7 +84,6 @@ class TravelLocationsMapViewController: UIViewController {
     // fetch all photos for a selected Pin
     func fetchPhotosForPin(pin: Pin) {
         // TODO: Debugging
-        print("Fetching photos for new location...")
         FlickrClient.sharedInstance.getPhotosForLocation(pin, completionHandler: {
             success, errorString in
             

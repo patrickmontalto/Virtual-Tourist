@@ -95,20 +95,11 @@ class FlickrClient: NSObject {
                 
                 // Download photo using URL
                 self.getImageForPhoto(newPhoto, completionHandler: { (success, errorString) in
-                    
-//                    // TODO: Save context??
-//                    dispatch_async(dispatch_get_main_queue(), {
-//                        print("Got image for photo. Saving Context...")
-//                        CoreDataStackManager.sharedInstance().saveContext()
-//                    })
                 })
                 
             }
-            print("Got images for all photos")
             CoreDataStackManager.sharedInstance().saveContext()
             completionHandler(success: true, errorString: nil)
-            // Success case: return photoArray
-            //completionHandler(success: true, photos: photoArray, errorString: nil)
         }
     }
     

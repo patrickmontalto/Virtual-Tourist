@@ -252,6 +252,9 @@ extension TravelLocationsMapViewController: MKMapViewDelegate {
             
            // view.removeFromSuperview()
         } else {
+            // Deselect current pin
+            mapView.deselectAnnotation(view.annotation!, animated: false)
+            // Present photo album for pin
             presentPhotoAlbumForLocation(pin)
         }
     }

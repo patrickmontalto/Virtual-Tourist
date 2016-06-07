@@ -79,6 +79,7 @@ class FlickrClient: NSObject {
                 completionHandler(success: false, errorString: "Error: photo array not found in photos dictionary.")
                 return
             }
+            var newPhotos = [Photo]()
             
             // Now we have an array of photo dictionaries. Create the photo and download the image for each
             for photo in photoArray {
@@ -87,16 +88,14 @@ class FlickrClient: NSObject {
                 
                 // Create new Photo object
                 let newPhoto = Photo(pin: location, photoURL: photoURLString, context: self.sharedContext)
-                
-                // Save context??
-                dispatch_async(dispatch_get_main_queue(), {
-                    CoreDataStackManager.sharedInstance().saveContext()
-                })
-                
+                newPhotos.append(newPhoto)
+            }
+            // Got all photos. now save context.
+            CoreDataStackManager.sharedInstance().saveContext()
+            for photo in newPhotos {
                 // Download photo using URL
-                self.getImageForPhoto(newPhoto, completionHandler: { (success, errorString) in
+                self.getImageForPhoto(photo, completionHandler: { (success, errorString) in
                 })
-                
             }
             CoreDataStackManager.sharedInstance().saveContext()
             completionHandler(success: true, errorString: nil)
@@ -123,7 +122,6 @@ class FlickrClient: NSObject {
             photo.filePath = fileURL.path!
             
             completionHandler(success: true, errorString: nil)
-            
         } else {
             // Update Photo Model for error case
             photo.filePath = "error"

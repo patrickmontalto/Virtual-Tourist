@@ -138,16 +138,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             
             if success {
                 
-                //save and enable the button
+                // Save and enable the button
                 dispatch_async(dispatch_get_main_queue(), {
                     CoreDataStackManager.sharedInstance().saveContext()
                     self.newCollectionButton.userInteractionEnabled = true
                 })
             } else {
                 
-                //show error alert and enable button
+                // Show error alert and enable button
                 dispatch_async(dispatch_get_main_queue(), {
-                    // TODO: Display alert to user notifying them of errorString
                     self.newCollectionButton.userInteractionEnabled = true
                 })
             }
@@ -184,10 +183,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
 
     // MARK: - Collection View
     
-//    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
-//        return fetchedResultsController.sections?.count ?? 0
-//    }
-    
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         //Get section info from the fetched results controller...
         if let sectionInfo = fetchedResultsController.sections?[section] {
@@ -207,7 +202,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         return cell
     }
     
-    // TODO: - didSelectItemAtIndexPath
     
     // MARK: - Fetched Results Controller Delegate
     
@@ -254,26 +248,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             }
             }) { (true) in
                 self.stopAnimatingActivityIndicator()
-        }
-        
-//        //Make the relevant updates to the collectionView once Core Data has finished its changes.
-//        photoCollectionView.performBatchUpdates({
-//            
-//            for indexPath in self.insertedIndexPaths {
-//                self.photoCollectionView.insertItemsAtIndexPaths([indexPath])
-//            }
-//            
-//            for indexPath in self.deletedIndexPaths {
-//                self.photoCollectionView.deleteItemsAtIndexPaths([indexPath])
-//            }
-//            
-//            for indexPath in self.updatedIndexPaths {
-//                self.photoCollectionView.reloadItemsAtIndexPaths([indexPath])
-//            }
-//            
-//            }, completion: nil)
-
-        
+        }        
     }
 
     
@@ -282,7 +257,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     func configureCell(cell: PhotoCollectionViewCell, atIndexPath indexPath: NSIndexPath) {
         let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Photo
         
-        //update cell properties
+        // Update cell properties
         if photo.image != nil {
             
             cell.activityIndicator.stopAnimating()
@@ -291,6 +266,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             
             UIView.animateWithDuration(0.2,
                                        animations: { cell.imageView.alpha = 1.0 })
+        } else {
+            cell.imageView.image = nil
+            cell.activityIndicator.startAnimating()
         }
     }
     
